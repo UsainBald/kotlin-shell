@@ -11,11 +11,15 @@ class VirtualFileSystem(tarPath: String) {
   private var currentDirectory: String = "/"
 
   init {
-    extractTar(tarPath)
+    val tarFile = File(tarPath)
+    if (tarFile.exists()) {
+      extractTar(tarPath)
+    } else {
+      throw IllegalArgumentException("Tar file not found: $tarPath")
+    }
 
-    // Set currentDirectory to the first directory in the map (if any)
     if (root.isNotEmpty()) {
-      currentDirectory = root.keys.first() // Set to the first directory found
+      currentDirectory = root.keys.first()
       println("Set initial directory to: $currentDirectory")
     }
   }
@@ -31,13 +35,23 @@ class VirtualFileSystem(tarPath: String) {
       println("Extracting: $entryName (is directory: ${entry.isDirectory})")
 
       if (entry.isDirectory) {
-        root[entryName] = mutableListOf()
+        // If it's a directory, add it to the root map
+        root.computeIfAbsent(entryName) { mutableListOf() }
       } else {
-        val parentDir = entryName.substringBeforeLast('/')
-        root.computeIfAbsent(parentDir) { mutableListOf() }
-        root[parentDir]?.add(entryName.substringAfterLast('/'))
+        // It's a file, extract its parent directory and add the file to it
+        val parentDir = entryName.substringBeforeLast('/', "")
+        val fileName = entryName.substringAfterLast('/')
 
-        // Store file contents in memory for later use
+        if (parentDir.isNotEmpty()) {
+          root.computeIfAbsent(parentDir) { mutableListOf() }
+          root[parentDir]?.add(fileName)
+        } else {
+          // Root directory files
+          root.computeIfAbsent("/") { mutableListOf() }
+          root["/"]?.add(fileName)
+        }
+
+        // Store the file's content in the fileContents map
         val outputStream = ByteArrayOutputStream()
         tarInputStream.copyTo(outputStream)
         fileContents[entryName] = outputStream.toString()
@@ -55,7 +69,6 @@ class VirtualFileSystem(tarPath: String) {
     }
   }
 
-  // Return the file content as a string if the file exists in the current directory
   fun readFileContent(fileName: String): String? {
     val fullPath = if (currentDirectory == "/") fileName else "$currentDirectory/$fileName"
     return fileContents[fullPath]
@@ -63,23 +76,12 @@ class VirtualFileSystem(tarPath: String) {
 
   fun listFiles(): List<String> {
     val cleanCurrentDir = currentDirectory.trimEnd('/')
-    println("Listing files and directories in: $cleanCurrentDir")
-
     val files = root[cleanCurrentDir] ?: emptyList()
-
     val subdirectories = root.keys.filter { it.startsWith("$cleanCurrentDir/") && it != cleanCurrentDir }
       .map { it.removePrefix("$cleanCurrentDir/").split("/").first() }
       .distinct()
 
-    val combinedList = files + subdirectories
-
-    if (combinedList.isEmpty()) {
-      println("No files or directories found in $cleanCurrentDir")
-    } else {
-      println("Found files and directories in $cleanCurrentDir: ${combinedList.joinToString(", ")}")
-    }
-
-    return combinedList
+    return files + subdirectories
   }
 
   fun changeDirectory(path: String): Boolean {
@@ -92,8 +94,8 @@ class VirtualFileSystem(tarPath: String) {
     }
 
     return if (root.containsKey(newPath)) {
-      println("Changed directory to: $newPath")
       currentDirectory = newPath
+      println("Changed directory to: $newPath")
       true
     } else {
       println("Directory not found: $newPath")

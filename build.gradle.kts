@@ -16,6 +16,8 @@ repositories {
 dependencies {
     implementation(compose.desktop.currentOs)
     implementation("org.apache.commons:commons-compress:1.26.0")
+    implementation("commons-codec:commons-codec:1.15")
+    testImplementation(kotlin("test"))
 }
 
 tasks.withType<KotlinCompile> {
