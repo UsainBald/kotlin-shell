@@ -147,7 +147,8 @@ To run the tests, use the following command:
 This will execute all unit tests defined in the `src/test` directory, including:
 - **CommandTests**: Tests for commands such as `ls`, `cd`, `wc`, `history`, and `uptime`.
 - **VirtualFileSystemTest**: Tests for the virtual file system's functionality, including file extraction, listing, and directory navigation.
-# Test Results
+- 
+### Test Results
 
 The following screenshot shows the successful execution of the test suite:
 
