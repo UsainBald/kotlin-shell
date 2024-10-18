@@ -102,4 +102,12 @@ class VirtualFileSystem(tarPath: String) {
       false
     }
   }
+
+  fun getCurrentDirectory(): String {
+    return currentDirectory.trimEnd('/')
+  }
+
+  fun getCurrentDirectoryDepth(): Int {
+    return currentDirectory.count { it == '/' }
+  }
 }
