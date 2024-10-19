@@ -71,7 +71,7 @@ The emulator supports the following commands:
 
 2. Navigate to the project directory:
    ```bash
-   cd kotlin-shell-emulator
+   cd kotlin-shell
    ```
 
 3. Build the project using Gradle:
