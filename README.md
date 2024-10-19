@@ -66,7 +66,7 @@ The emulator supports the following commands:
 
 1. Clone the repository to your local machine:
    ```bash
-   git clone https://github.com/your-repo/kotlin-shell-emulator.git
+   git clone https://github.com/UsainBald/kotlin-shell.git
    ```
 
 2. Navigate to the project directory:
